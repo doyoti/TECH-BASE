@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>mission_5-1</title>
+</head>
+<body>
+    <?php
+    error_reporting(E_ALL & ~E_NOTICE);  //phpのエラーを非表示にする
+    
+    //データベースへの接続
+    $dsn = 'mysql:dbname=データベース名;host=localhost';
+    $user = 'ユーザー名';
+    $password = 'パスワード';
+    $pdo = new PDO($dsn, $user, $password, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING));
+    
+    
+    //データベース内にテーブルを作成
+    $sql = "CREATE TABLE IF NOT EXISTS tb51"
+    ." ("
+    . "id INT AUTO_INCREMENT PRIMARY KEY,"
+    . "name char(32),"          //名前
+    . "comment TEXT,"           //コメント
+    . "date char(32),"          //投稿日時
+    . "password char(32)"       //パスワード
+    .");";
+    $stmt = $pdo->query($sql);
+    
+    
+    //POSTなどの設定
+        $date777 = date("Y年m月d日 H時i分s秒");   //投稿日時
+        
+        //新規投稿欄
+        $name1 = $_POST["name1"];                 //名前
+        $comment1 = $_POST["comment1"];           //コメント
+        $password1 = $_POST["password1"];         //投稿パスワード
+        $edit1 = $_POST["edit1"];                 //新規投稿欄の編集対象番号
+        
+        //削除欄
+        $delete2 = $_POST["delete2"];             //削除対象番号
+        $password2 = $_POST["password2"];         //削除パスワード
+        
+        //編集欄
+        $edit3 = $_POST["edit3"];                 //編集対象番号
+        $password3 = $_POST["password3"];         //編集欄の編集パスワード
+    
+    
+    //新規投稿
+    if(!empty($name1) && !empty($comment1) && empty($edit1)) {  //新規投稿は編集対象番号が空
+    
+        if(!empty($password1)){
+            $sql = $pdo -> prepare("INSERT INTO tb51 (name, comment, date, password) VALUES (:name, :comment, :date, :password)");
+            $sql -> bindParam(':name', $name, PDO::PARAM_STR);  //名前に書き込む
+            $sql -> bindParam(':comment', $comment, PDO::PARAM_STR);  //コメントに書き込む
+            $sql -> bindParam(':date', $date, PDO::PARAM_STR);  //投稿日時に書き込む
+            $sql -> bindParam(':password', $password, PDO::PARAM_STR);  //パスワードに書き込む    
+            
+            $name = $name1;
+            $comment = $comment1;
+            $date = $date777;
+            $password = $password1;
+            $sql -> execute();
+        }
+        elseif(empty($password1)){
+            echo "パスワードを入力してください。"."<br>";
+        }
+    }
+    
+    
+    //編集
+    if(!empty($edit3)){
+        
+        if(!empty($password3)){
+                
+            $id = $edit3;
+            $password = $password3;
+            $sql = 'SELECT * FROM tb51 WHERE id=:id and password=:password';
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->bindParam(':password',$password,PDO::PARAM_STR);
+            $stmt->execute();
+            $results = $stmt->fetchAll();
+            foreach ($results as $row){
+                $i = $row['name'];           //名前
+                $j = $row['comment'];        //コメント
+                $k = $row['password'];       //パスワード
+                $l = $row['id'];             //投稿番号
+
+            }
+        }
+        
+        elseif(empty($password3)){
+            echo "パスワードを入力してください。";
+        }
+        
+    }
+    
+    
+    ?>
+    
+        <form action="" method="post">
+        <input type="text" name="name1" placeholder="名前" value = "<?php if(isset($edit3)) {echo $i;} ?>"><br>
+        <input type="text" name="comment1" placeholder="コメント" value = "<?php if(isset($edit3)) {echo $j;} ?>"><br>
+        <input type="text" name="password1" placeholder="パスワード" value = "<?php if(isset($edit3)) {echo $k;} ?>"><br>
+        <input type="hidden" name="edit1" placeholder="編集対象番号" value = "<?php if(isset($edit3)) {echo $l;} ?>">
+        <input type="submit" name="submit1" value = "投稿"><br><br>
+        <input type="number" name="delete2" placeholder="削除対象番号"><br>
+        <input type="text" name="password2" placeholder="パスワード"><br>
+        <input type="submit" name="submit2" value = "削除"><br><br>
+        <input type="number" name="edit3" placeholder="編集対象番号"><br>
+        <input type="text" name="password3" placeholder="パスワード"><br>
+        <input type="submit" name="submit3" value = "編集"><br>
+             
+        
+    </form>
+    <?php
+    
+    //編集
+    if(!empty($name1) && !empty($comment1) && !empty($edit1)) {
+        
+        $id = $edit1; //変更する投稿番号
+        $name = $name1;
+        $comment = $comment1;
+        $date = $date777;
+        $password = $password1;
+        $sql = 'UPDATE tb51 SET name=:name,comment=:comment,date=:date,password=:password WHERE id=:id';   //where=if
+        $stmt = $pdo->prepare($sql);                                                                       //sqlに出てくる文字は、bindParamに出てくるものはそろえる
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->bindParam(':name', $name, PDO::PARAM_STR);
+        $stmt->bindParam(':comment', $comment, PDO::PARAM_STR);
+        $stmt->bindParam(':password', $password, PDO::PARAM_STR);
+        $stmt->bindParam(':date', $date, PDO::PARAM_STR);
+        $stmt->execute();
+    }
+    
+    
+    //削除
+    if(!empty($delete2)) {
+        
+        if(!empty($password2)){
+            
+            $id = $delete2;
+            $password = $password2;
+            $sql = 'delete from tb51 where id=:id and password=:password';
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->bindParam(':password', $password, PDO::PARAM_STR);
+            $stmt->execute();
+        }
+        
+        elseif(empty($password2)){
+            echo "パスワードを入力してください。<br>";
+        }
+    }
+    
+    
+    //画面表示
+        
+    $sql = 'SELECT * FROM tb51';
+    $stmt = $pdo->query($sql);
+    $results = $stmt->fetchAll();
+    foreach ($results as $row){
+        echo $row['id'].',';
+        echo $row['name'].',';
+        echo $row['comment'].',';
+        echo $row['date'].'<br>';
+    echo "<hr>";
+    }
+
+
+    ?>
+    
+</body>
+</html>
