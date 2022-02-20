@@ -85,14 +85,11 @@
                 $j = $row['comment'];        //コメント
                 $k = $row['password'];       //パスワード
                 $l = $row['id'];             //投稿番号
-
             }
         }
-        
         elseif(empty($password3)){
             echo "パスワードを入力してください。";
         }
-        
     }
     
     
@@ -124,7 +121,7 @@
         $date = $date777;
         $password = $password1;
         $sql = 'UPDATE tb51 SET name=:name,comment=:comment,date=:date,password=:password WHERE id=:id';   //where=if
-        $stmt = $pdo->prepare($sql);                                                                       //sqlに出てくる文字は、bindParamに出てくるものはそろえる
+        $stmt = $pdo->prepare($sql);                                                                       //sqlに出てくる文字と、bindParamに出てくる文字は同じ数、同じものを用意する。
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->bindParam(':name', $name, PDO::PARAM_STR);
         $stmt->bindParam(':comment', $comment, PDO::PARAM_STR);
@@ -155,7 +152,6 @@
     
     
     //画面表示
-        
     $sql = 'SELECT * FROM tb51';
     $stmt = $pdo->query($sql);
     $results = $stmt->fetchAll();
@@ -166,8 +162,8 @@
         echo $row['date'].'<br>';
     echo "<hr>";
     }
-
-
+    
+    
     ?>
     
 </body>
